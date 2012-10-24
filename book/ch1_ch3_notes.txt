@@ -1,0 +1,835 @@
+Last login: Tue May  1 14:46:48 on ttys000
+bericoadmins-MacBook-Pro:~ randy$ python
+Python 2.7.3 (default, May  1 2012, 13:57:21) 
+[GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2335.15.00)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import nltk
+>>> from nltk.book import *
+*** Introductory Examples for the NLTK Book ***
+Loading text1, ..., text9 and sent1, ..., sent9
+Type the name of the text or sentence to view it.
+Type: 'texts()' or 'sents()' to list the materials.
+text1: Moby Dick by Herman Melville 1851
+text2: Sense and Sensibility by Jane Austen 1811
+text3: The Book of Genesis
+text4: Inaugural Address Corpus
+text5: Chat Corpus
+text6: Monty Python and the Holy Grail
+text7: Wall Street Journal
+text8: Personals Corpus
+text9: The Man Who Was Thursday by G . K . Chesterton 1908
+>>> text4.dispersion_plot(["America", "democracy"])
+>>> text4.dispersion_plot(["terror", "god"])
+>>> text4.dispersion_plot(["terror", "god, freedom, duties"])
+>>> text4.dispersion_plot(["terror", "god", "freedom", "duties"])
+
+
+Notes
+--------------------------------------------------------------------------------
+CH 1.
+Concordance - shows every occurrence of a given word together with some context
+text4.concordance('democracy')
+text3.concordance('lived')
+Similar - words that are used in the same context as the given word
+text1.similar('monstrous')
+Common contexts - Examine just the contexts that are shared by two words
+text2.common_contexts(['monstrous', 'very'])
+Don't fully understand common contexts and how it builds them ???????????
+Dispersion plot - determine the location of a word, and how many words it occurs from the beginning of the text.
+text4.dispersion_plot('citizens', 'democracy', 'freedom')
+from __future__ import division
+len(text3) / len(set(text3))
+text3.count('smote')
+100 * text4.count('a') / len(text4)
+def percentage(count, total):
+	percentage(text4.count('a'), len(text4))
+
+pg 18. hapaxes - words that occur only once
+
+V = set(text1)
+long_words = [w for w in V if len(w) > 15]
+sorted(long_words)
+
+fdist5 = FreqDist(text5)
+sorted([w for w in set(text5) if len(w) > 7 and fdist5[w] > 7])
+
+collocation is a sequence of words that occur together unusually often
+bigrams - word pairs
+
+text4.collocations()
+
+text8.collocations()
+
+fdist.freq('monstrous')
+fdist5.plot()
+
+pg.24 len(set([word.lower() for word in text1 if word.isalpha()]))
+
+information extraction, inference, and summarization are some of the high level tasks in nlp involved in asking complex questions to the computer
+
+pg. 28 agentive, locative, temporal as it relates to determining the meaning of simple words such as by. Pronoun Resolution 
+
+pg. 32 Recognizing Textual Entailment (RTE) 
+
+-------------------------------------------------------------------------
+CH 2.
+
+import nltk
+nltk.corpus.gutenberg.fileids()
+
+emma = nltk.corpus.gutenberg.words("austen-emma.txt")
+emma
+
+from nltk.corpus import gutenberg
+gutenberg
+<PlaintextCorpusReader in '/Users/randy/nltk_data/corpora/gutenberg'>
+gutenberg.fileids()
+
+
+pg.44
+
+>>> cfd = nltk.ConditionalFreqDist(
+...     (genre, word)
+...     for genre in brown.categories()
+...     for word in brown.words(categories=genre))
+
+>>> 
+>>> genres = ["news", "religion", "hobbies", "science_fiction", "romance", "humor"]
+>>> modals = ["can", "could", "may", "might", "must", "will"]
+>>> cfd.tabulate(conditions=genres, samples=modals)
+
+pg. 46
+
+>>> cfd = nltk.ConditionalFreqDist(
+...   (target, fileid[:4])
+...   for fileid in inaugural.fileids()
+...   for w in inaugural.words(fileid)
+...   for target in ['america', 'citizen']
+...   if w.lower().startswith(target))
+>>> cfd.plot()
+
+
+pg.48
+
+nltk.corpus.floresta.words() doesn't work, nor does cess_esp or indian, tried from nltk.corpus import indian …, didn't work
+
+
+pg.53
+
+>>> genre_word = [(genre, word)
+...   for genre in ['news', 'romance']
+...   for word in brown.words(categories=genre)]
+>>> len(genre_word)
+
+from nltk.corpus import brown
+cfd = nltk.ConditionalFreqDist(
+  (genre, word)
+  for genre in brown.categories()
+  for word in brown.words(categories=genre))
+
+genre_word = [(genre,word)
+	for genre in ['news', 'romance']
+	for word in brown.words(categories=genre)]
+
+>>> genre_word[:4]
+[('news', 'The'), ('news', 'Fulton'), ('news', 'County'), ('news', 'Grand')]
+>>> genre_word[-4:]
+[('romance', 'afraid'), ('romance', 'not'), ('romance', "''"), ('romance', '.')]
+
+>>> cfd = nltk.ConditionalFreqDist(genre_word)
+>>> cfd
+<ConditionalFreqDist with 2 conditions>
+>>> cfd['news']
+<FreqDist with 14394 samples and 100554 outcomes>
+>>> cfd['romance']
+<FreqDist with 8452 samples and 70022 outcomes>
+
+This is important to understand because a cfd is just a bunch of frequency distributions where you can access each by the condition.
+
+pg.54
+
+cfd = nltk.ConditionalFreqDist(
+   (target, fileid[:4])
+   for fileid in inaugural.fileids()
+   for w in inaugural.words(fileid)
+   for target in ["america", "citizen"]
+   if w.lower().startswith(target))
+cfd.plot()
+
+>>> cfd = nltk.ConditionalFreqDist(
+...   (lang, (len(word))
+...   for lang in languages
+  File "<stdin>", line 3
+    for lang in languages
+
+????????? why does this error
+
+cfd.tabulate(conditions=['English', 'German_Deutsch'], samples=range(10), cumulative=True)
+
+pg. 55
+
+In general when we use a list comprehension as a parameter to a function, like set([w.lower for w in t]) we can omit the brackets, like
+  set(w.lower() for w in t)!
+
+pg. 58
+
+def plural(word):
+  if word.endswith('y'):
+    return word[:-1] + 'ies'
+  elif word[-1] in 'sx' or word[-2:] in ['sh','ch']:
+    return word + 'es'
+  elif word.endswith('an'):
+    return word[:-2] + 'en'
+  else:
+    return word + 's'
+
+pg. 59, 60
+
+Homonyms are two distinct words having the same spelling.
+A lexical entry consists of a headword (also known as a lemma) along with additional information, such as the part-of-speech and the sense definition
+A lexicon or lexical resource is a collection of words and/or phrases along with associated information, such as part-of-speech and sense definitions.
+
+def unusual_words(text):
+  text_vocab = set(w.lower() for w in text if w.isalpha())
+  english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+  unusual = text_vocab.difference(english_vocab)
+  return sorted(unusual)
+
+unusual_words(nltk.corpus.gutenberg.words('austen-sense.txt'))
+
+from nltk.corpus import stopwords
+stopwords.words('english')
+
+pg. 61
+
+def content_fraction(text):
+  stopwords = nltk.corpus.stopwords.words('english')
+  content = [w for w in text if w.lower() not in stopwords]
+  return len(content) / len(text)
+
+Word puzzle. Coming up with words that satisfy the conditions below
+
+puzzle_letters = nltk.FreqDist('egivrvonl')
+obligatory = 'r'
+wordlist = nltk.corpus.words.words()
+[w for w in wordlist if len(w) >= 6
+  and obligatory in w
+  and nltk.FreqDist(w) <= puzzle_letters]
+
+>>> blah = nltk.FreqDist('g')
+>>> blah <= puzzle_letters 
+True
+>>> blah = nltk.FreqDist('gordon')
+>>> blah <= puzzle_letters 
+False
+>>> blah = nltk.FreqDist('grdon')
+>>> blah <= puzzle_letters 
+False
+>>> blah = nltk.FreqDist('gron')
+>>> blah <= puzzle_letters 
+True
+
+Frequency distribution comparison method is pretty interesting stuff. It lets us check the frequency of each letter in the distribution against another fd.
+
+pg 62.
+
+names = nltk.corpus.names
+names.fileids()
+
+male_names = names.words('male.txt')
+female_names = names.words('female.txt')
+
+[w for w in male_names if w in female_names]
+
+cfd = nltk.ConditionalFreqDist(
+  (fileid, name[-1])
+  for fileid in names.fileids()
+  for name in names.words(fileid)
+)
+
+cfd.plot()
+
+pg 63.
+
+entries = nltk.corpus.cmudict.entries()
+len(entries)
+for entry in entries[39943:39953]:
+  print entry
+
+for word, pron in entries:
+  if len(pron) == 3:
+    ph1, ph2, ph3 = pron
+    if ph1 == 'P' and ph3 == 'T':
+      print word, ph2
+
+pg 64.
+
+syllable = ['N', 'IH0', 'K', 'S']
+[word for word, pron in entries if pron[-4:] == syllable]
+
+[w for w, pron in entries if pron[-1] == 'M' and w[-1] == 'n']
+sorted(set(w[:2] for w, pron in entries if pron[0] == 'N' and w[0] != 'n'))
+
+Stress of words, looking at particular patterns of stress
+
+def stress(pron):
+  return [char for phone in pron for char in phone if char.isdigit()]
+
+[w for w, pron in entries if stress(pron) == ['0', '1', '0', '2', '0']]
+
+[w for w, pron in entries if stress(pron) == ['0', '2', '0', '1', '0']]
+
+p3 = [(pron[0] + '-' + pron[2], word) 
+  for (word, pron) in entries
+  if pron[0] == 'P' and len(pron) == 3]
+  
+cfd = nltk.ConditionalFreqDist(p3)
+
+for template in cfd.conditions():
+  if len(cfd[template]) > 10:
+    words = cfd[template].keys()
+    wordlist = ' '.join(words)
+    print template, wordlist[:70] + "..."
+
+pg. 65
+
+prondict = nltk.corpus.cmudict.dict()
+>>> prondict['fire']
+[['F', 'AY1', 'ER0'], ['F', 'AY1', 'R']]
+>>> prondict['blog']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'blog'
+
+text = ['natural', 'language', 'processing']
+[ph for w in text for ph in prondict[w][0]]
+
+>>> from nltk.corpus import swadesh
+>>> swadesh.fileids()
+['be', 'bg', 'bs', 'ca', 'cs', 'cu', 'de', 'en', 'es', 'fr', 'hr', 'it', 'la', 'mk', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sr', 'sw', 'uk']
+>>> swadesh.words('en')
+
+pg. 66
+
+fr2en = swadesh.entries(['fr', 'en'])
+fr2en
+
+translate = dict(fr2en)
+translate['chien']
+
+translate['jeter']
+
+de2en = swadesh.entries(['de', 'en'])
+es2en = swadesh.entries(['es', 'en'])
+translate.update(dict(de2en))
+translate.update(dict(es2en))
+
+translate['Hund']
+
+languages = ['en', 'de', 'nl', 'es', 'fr', 'pt', 'la']
+for i in [139, 140, 141, 142]:
+  print swadesh.entries(languages)[i]
+
+pg. 67
+
+from nltk.corpus import toolbox
+toolbox.entries('rotokas.dic')
+
+pg. 68
+
+from nltk.corpus import wordnet as wn
+wn.synsets('motorcar')
+wn.synset('car.n.01').definition
+wn.synset('car.n.01').examples
+wn.synset('car.n.01').lemmas
+wn.lemma('car.n.01.automobile')
+wn.lemma('car.n.01.automobile').synset
+wn.lemma('car.n.01.automobile').name
+
+wn.synsets('car')
+
+for synset in wn.synsets('car'):
+  print synset.lemma_names
+
+pg. 69
+
+motorcar = wn.synset('car.n.01')
+types_of_motorcar = motorcar.hyponyms()
+types_of_motorcar[26]
+sorted([lemma.name for synset in types_of_motorcar for lemma in synset.lemmas])
+
+In Wordnet some concepts are very general like Entity, State, Event; these are called unique beginners or root sunsets.
+
+The Wordnet concept hierarchy was shown. Inside it nodes correspond to sunsets; edges indicate the hypernym/hyponym relation. i.e. the relation between superordinate and subordinate concepts.
+
+pg. 70
+
+motorcar.hypernyms()
+paths = motorcar.hypernym_paths()
+paths
+len(paths)
+
+motorcar.root_hypernyms()
+
+[synset.name for synset in paths[0]]
+[synset.name for synset in paths[1]]
+
+nltk.app.wordnet()
+
+Wordnet lexical relations go up and down the is-a hierarchy. another way to navigate is to components meronyms or to the things they are contained in holonyms
+
+wn.synset('tree.n.01').part_meronyms()
+wn.synset('tree.n.01').substance_meronyms()
+
+pg 71
+
+wn.synset('tree.n.01').member_holonyms()
+
+for synset in wn.synsets('mint', wn.NOUN):
+  print synset.name + ':', synset.definition
+
+wn.synset('mint.n.04').part_holonyms()
+wn.synset('mint.n.04').substance_holonyms()
+
+wn.synset('walk.v.01').entailments()
+
+wn.lemma('supply.n.02.supply').antonyms()
+wn.lemma('rush.v.01.rush').antonyms()
+wn.lemma('horizontal.a.01.horizontal').antonyms()
+
+dir(wn.synset('harmony.n.02'))
+
+pg. 72
+
+right = wn.synset('right_whale.n.01')
+orca = wn.synset('orca.n.01')
+minke = wn.synset('minke_whale.n.01')
+tortoise = wn.synset('tortoise.n.01')
+novel = wn.synset('novel.n.01')
+right.lowest_common_hypernyms(minke)
+right.lowest_common_hypernyms(orca)
+right.lowest_common_hypernyms(tortoise)
+right.lowest_common_hypernyms(novel)
+
+wn.synset('baleen_whale.n.01').min_depth()
+wn.synset('whale.n.02').min_depth()
+wn.synset('vertebrate.n.01').min_depth()
+wn.synset('entity.n.01').min_depth()
+
+right.path_similarity(minke)
+right.path_similarity(orca)
+right.path_similarity(tortoise)
+right.path_similarity(novel)
+
+-------------------------------------------------------------------------
+CH 3.
+
+from __future__ import division
+import nltk, re, pprint
+
+pg. 80
+
+from urllib import urlopen
+url = "http://www.gutenberg.org/files/2554/2554.txt" # Doesn't work anymore
+url = "http://www.gutenberg.org/cache/epub/9259/pg9259.html"
+
+# gutenbureg doesn't like bots!!
+raw = ""
+with open('/Users/randy/Desktop/pg9259.html', 'r') as f:
+  raw = f.read()
+
+# raw = urlopen(url).read()
+type(raw)
+
+len(raw)
+
+raw[:75]
+
+
+tokens = nltk.word_tokenize(raw)
+type(tokens)
+len(tokens)
+tokens[:10]
+
+pg. 81
+
+text = nltk.Text(tokens)
+type(text)
+text[1020:1060]
+text.collocations()
+raw.find("START OF THIS PROJECT GUTENBERG EBOOK")
+
+raw.rfind("End of Project Gutenberg's Crime")
+raw = raw[5303:1157681]
+raw.find("PART I")
+
+pg. 82
+
+raw = nltk.clean_html(html)
+tokens = nltk.word_tokenize(raw)
+tokens
+text = nltk.Text(tokens)
+text.concordance('people')
+
+
+pg. 83
+
+import feedparser
+llog = feedparser.parse("http://languagelog.ldc.upenn.edu/nll/?feed=atom")
+llog['feed']['title']
+len(llog.entries)
+
+post = llog.entries[2]
+post.title
+content = post.content[0].value
+content[:70]
+
+nltk.word_tokenize(nltk.html_clean(content))
+nltk.word_tokenize(nltk.clean_html(llog.entries[2].content[0].value))
+
+
+pg. 85
+
+path = nltk.data.find('corpora/gutenberg/melville-moby_dick.txt')
+raw = open(path, 'rU').read()
+
+s = raw_input('Enter some text: ')
+print "You typed", len(nltk.word_tokenize(s)), "words."
+
+...
+Python language stuff
+…
+
+pg. 88
+
+a = [1,2,3,4,5,6,7,6,5,4,3,2,1]
+b = [' ' * 2 * (7 - i) + 'very' * i for i in a]
+for line in b:
+  print line
+
+pg. 90
+
+sent = 'colorless green ideas sleep furiously'
+for char in sent:
+  print char,
+
+from nltk.corpus import gutenberg
+raw = gutenberg.raw('melville-moby_dick.txt')
+fdist = nltk.FreqDist(ch.lower() for ch in raw if ch.isalpha())
+fdist.keys()
+fdist.plot() # The relative character frequencies of the letters can tell us what language the text is written in
+
+pg. 91, 92
+operating on strings. string.title() will title case the string, kind of cool
+
+pg. 93
+
+List are mutable in python, strings are not mutable
+
+pg. 94
+In Unicode. characters are abstract entities that can be realized as one or more glyphs. Only glyphs can appear on screen or be printed on paper. A font is a mapping from characters to glyphs 
+
+translation into unicode called decoding, translation out is called encoding
+
+pg. 95
+
+path = nltk.data.find('corpora/unicode_samples/polish-lat2.txt')
+import codecs
+f = codecs.open(path, encoding='latin2')
+
+f = codecs.open(path, 'w', encoding='utf-8')
+
+for line in f:
+  line = line.strip
+  print line.encode('unicode_escape')
+
+ord('a')
+
+96.
+
+import unicodedata
+lines = codecs.open(path, encoding='latin2').readLines()
+
+
+pg. 97
+
+Starting regular expressions
+
+pg. 98
+
+import re
+wordlist = [w for w in nltk.corpus.words.words('en') if w.islower()]
+[w for w in wordlist if re.search('ed$', w)]
+[w for w in wordlist if re.search('^..j..t..$', w)]
+
+pg. 99
+
+T9
+[w for w in wordlist if re.search('^[ghi][mno][jlk][def]$', w)]
+
+pg. 100
+
+chat_words = sorted(set(w for w in nltk.corpus.nps_chat.words()))
+[w for w in chat_words if re.search('^m+i+n+e+$', w)]
+
+[w for w in chat_words if re.search('^[ha]+$', w)]
+
++ or * are sometimes referred to as Kleene closures or simply closures
+
+wsj = sorted(set(nltk.corpus.treebank.words()))
+[w for w in wsj if re.search('^[0-9]+\.[0-9]+$', w)]
+
+[w for w in wsj if re.search('^[A-Z]+\$$', w)]
+
+[w for w in wsj if re.search('^[0-9]{4}$', w)]
+
+[w for w in wsj if re.search('^[0-9]+-[a-z]{3,5}$', w)]
+
+[w for w in wsj if re.search('^[a-z]{5,}-[a-z]{2,3}-[a-z]{,6}$', w)]
+
+[w for w in wsj if re.search('ed|ing$', w)]
+
+pg. 101
+
+Talking about regexp syntax
+
+pg. 102
+
+word = 'supercalifragilisticexpialidocious'
+re.findall(r'[aeiou]', word)
+
+len(re.findall(r'[aeiou]', word))
+
+
+fd = nltk.FreqDist(vs for word in wsj
+  for vs in re.findall(r'[aeiou]{2,}', word))
+
+fd.items()
+
+date2009 = '2009-12-31'
+[int(n) for n in re.findall(r'[0-9]+', date2009)]
+
+pg. 103
+
+regexp = r'^[AEIOUaeiou]+|[AEIOUaeiou]+$|[AEIOUaeiou]'
+def compress(word):
+  pieces = re.findall(regexp, word)
+  return ''.join(pieces)
+
+>>> english_udhr = nltk.corpus.udhr.words('English-Latin1')
+>>> print nltk.tokenwrap(compress(w) for w in english_udhr[:75])
+
+didn't work not sure how it was even supposed to work?
+
+rotokas_words = nltk.corpus.toolbox.words('rotokas.dic')
+cvs = [cv for w in rotokas_words for cv in re.findall(r'[ptksvr][aeiou]', w)]
+cfd = nltk.ConditionalFreqDist(cvs)
+cfd.tabulate()
+
+cv_word_pairs = [(cv, w) for w in rotokas_words
+                         for cv in re.findall(r'[ptksvr][aeiou]', w)]
+cv_index = nltk.Index(cv_word_pairs)
+cv_index['su']
+
+cv_index['po']
+
+pg. 104
+
+def stem(word):
+  for suffix in ['ing', 'ly', 'ed', 'ious', 'ies', 'ive', 'es', 's', 'ment']:
+    if word.endswith(suffix):
+      return word[:-len(suffix)]
+  return word
+
+re.findall(r'^.*(ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+re.findall(r'^.*(?:ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+
+pg. 105
+
+re.findall(r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+re.findall(r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)?$', 'processing')
+
+def stem(word):
+  regexp = r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)?$'
+  stem, suffix = re.findall(regexp, word)[0]
+  return stem
+
+tokens = nltk.word_tokenize(raw)
+[stem(t) for t in tokens]
+
+
+from nltk.corpus import gutenberg, nps_chat
+moby = nltk.Text(gutenberg.words('melville-moby_dick.txt'))
+moby.findall(r"<a> (<.*>) <man>")
+
+chat = nltk.Text(nps_chat.words())
+chat.findall(r"<.*> <.*> <bro>")
+
+pg. 106
+
+chat.findall(r"<l.*>{3,}")
+
+>>> nltk.re_show(r'[1]*', "101010")
+{1}0{1}0{1}0{}
+
+nltk.app.nemo()
+
+from nltk.corpus import brown
+hobbies_learned = nltk.Text(brown.words(categories=['hobbies', 'learned']))
+hobbies_learned.findall(r"<\w*> <and> <other> <\w*s>")
+
+hobbies_learned.findall(r"<as> <\w*> <as> <\w*>")
+
+pg. 107, 108
+
+porter = nltk.PorterStemmer()
+lancaster = nltk.LancasterStemmer()
+[porter.stem(t) for t in tokens]
+
+[lancaster.stem(t) for t in tokens]
+
+class IndexedText(object):
+  def __init__(self, stemmer, text):
+    self._text = text
+    self ._stemmer = stemmer
+    self._index = nltk.Index((self._stem(word), i)
+                             for (i, word) in enumerate(text))
+  
+  def concordance(self, word, width=40):
+    key = self._stem(word)
+    wc = width/4
+    for i in self._index[key]:
+      lcontext = ' '.join(self._text[i-wc:i])
+      rcontext = ' '.join(self._text[i:i+wc])
+      ldisplay = '%*s'  % (width, lcontext[-width:])
+      rdisplay = '%-*s'  % (width, rcontext[:width])
+      print ldisplay, rdisplay
+
+  def _stem(self, word):
+    return self._stemmer.stem(word).lower()
+
+porter = nltk.PorterStemmer()
+grail = nltk.corpus.webtext.words('grail.txt')
+text = IndexedText(porter, grail)
+text.concordance('lie')
+
+wnl = nltk.WordNetLemmatizer()
+[wnl.lemmatize(t) for t in tokens]
+
+pg. 109 110
+
+re.split(r'\W+', raw)
+
+re.findall(r'\w+|\S\w*', raw)
+'xx'.split('x')
+
+set(tokens).difference(wordlist)
+
+pg. 111
+
+text = 'That U.S.A. poster-print costs $12.40…'
+pattern = r'''(?x) # Set flag to allow verbose regexps
+    ([A-Z]\.)+
+  | \w+(-\w+)*
+  | \$?\d+(\.\d+)?%?
+  | \.\.\.
+  | [][.,;"'?():-_']
+'''
+nltk.regexp_tokenize(text, pattern)
+
+pg. 112 
+Tokenization is an instance of a more general problem of segmentation… Sentence Segmentation, Word Segmentation
+
+sent_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+text = nltk.corpus.gutenberg.raw('chesterton-thursday.txt')
+sents = sent_tokenizer.tokenize(text)
+import pprint
+pprint.pprint(sents[171:181])
+
+pg. 113 114
+
+def segment(text, segs):
+  words = []
+  last = 0
+  for i in range(len(segs)):
+    if segs[i] == '1':
+      words.append(text[last:i+1])
+      last = i+1
+  words.append(text[last:])
+  return words
+
+text = "doyouseethekittyseethedoggydoyoulikethekittylikethedoggy"
+seg1 = "0000000000000001000000000010000000000000000100001000001"
+seg2 = "010010010010000100100100001"
+segment(text, seg1)
+segment(text, seg2)
+
+pg. 115
+
+def evaluate(text, segs):
+  words = segment(text, segs)
+  text_size = len(words)
+  lexicon_size = len(' '.join(list(set(words))))
+  return text_size + lexicon_size
+
+evaluate(text, seg1)
+evaluate(text, seg2)
+
+from random import randint
+
+def flip(segs, pos):
+  return segs[:pos] + str(1-int(segs[pos])) + segs[pos+1:]
+
+def flip_n(segs, n):
+  for i in range(n):
+    segs = flip(segs, randint(0,len(segs)-1))
+  return segs
+
+def anneal(text, segs, iterations, cooling_rate):
+  temperature = float(len(segs))
+  while temperature > 0.5:
+    best_segs, best = segs, evaluate(text, segs)
+    for i in range(iterations):
+      guess = flip_n(segs, int(round(temperature)))
+      score = evaluate(text, guess)
+      if score < best:
+        best, best_segs = score, guess
+    score, segs = best, best_segs
+    temperature = temperature / cooling_rate
+    print evaluate(text, segs), segment(text, segs)
+  print
+  return segs
+
+pg. 116
+
+anneal(text, seg1, 5000, 1.2)
+
+pg. 117
+
+def tabulate(cfdist, words, categories):
+  print '%-16s' % 'Category',
+  for word in words:
+    print '%6s' % word,
+  print
+  for category in categories:
+    print '%-16s' % category,
+    for word in words:
+      print '%6d' % cfdist[category][word],
+    print
+
+from nltk.corpus import brown
+cfd = nltk.ConditionalFreqDist(
+  (genre, word)
+  for genre in brown.categories()
+  for word in brown.words(categories=genre))
+
+genres = ['news', 'religion', 'hobbies', 'science_fiction', 'romance', 'humor']
+modals = ['can', 'could', 'may', 'might', 'must', 'will']
+
+tabulate(cfd, modals, genres)
+
+
+
+
+
+
