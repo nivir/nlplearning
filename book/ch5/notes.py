@@ -158,8 +158,7 @@ baseline_tagger.tag(sent)
 baseline_tagger = nltk.UnigramTagger(model=likely_tags,
                                      backoff=nltk.DefaultTagger('NN'))
 
-# pg. 201
-
+# pg. 201 - pg. 202 # Talks about performance of Unigram Tagger varying with model size
 
 # pg. 203
 
@@ -186,7 +185,68 @@ bigram_tagger.tag(unseen_sent)
 bigram_tagger.evaluate(test_sents)
 
 # pg. 205
+
+# Precision/Recall Tradeoff - tradeoff between accuracy and coverage of our results
+
 t0 = nltk.DefaultTagger('NN')
 t1 = nltk.UnigramTagger(train_sents, backoff=t0)
 t2 = nltk.BigramTagger(train_sents, backoff=t1)
 print t2.evaluate(test_sents)
+
+t2 = nltk.BigramTagger(train_sents, cutoff=2, backoff=t1)
+
+# pg. 206
+
+from cPickle import dump
+output = open('t2.pkl', 'wb')
+dump(t2, output, -1)
+output.close()
+
+from cPickle import load
+input = open('t2.pkl', 'rb')
+tagger = load(input)
+input.close()
+
+text = """The board's action shows what free enterprise
+     is up against in our complex maze of regulatory laws ."""
+tokens = text.split()
+tagger.tag(tokens)
+
+# pg. 207
+
+cfd = nltk.ConditionalFreqDist(
+            ((x[1], y[1], z[0]), z[1])
+            for sent in brown_tagged_sents
+            for x, y, z in nltk.trigrams(sent))
+ambiguous_contexts = [c for c in cfd.conditions() if len(cfd[c]) > 1]
+sum(cfd[c].N() for c in ambiguous_contexts) / cfd.N()
+
+test_tags = [tag for sent in brown.sents(categories='editorial')
+                  for (word, tag) in t2.tag(sent)]
+gold_tags = [tag for (word, tag) in brown.tagged_words(categories='editorial')]
+print nltk.ConfusionMatrix(gold, test)   
+
+# pg. 208 - pg. 209
+
+# Brill tagging is a kind of Transformation-based learning
+#   The general idea is guess the tag of each word, then go back and fix mistakes
+#   However unlike n-gram tagging it does not count observations but compiles a list
+#     of transformational correction rules.
+
+# pg. 210
+
+nltk.brill.demo()
+
+print(open("errors.out").read())
+
+# pg. 211 - pg. 212 - end of chapter
+
+
+
+
+
+
+
+
+
+
